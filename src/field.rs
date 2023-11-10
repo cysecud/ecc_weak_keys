@@ -21,7 +21,8 @@ impl FieldPoint {
     		prime: self.prime}
     }
     pub fn multiple(&self,n:U256)->FieldPoint {
-    FieldPoint{num:self.num*n%self.prime,
+        let mul=(self.num*n.mod_fast(self.prime)).mod_fast(self.prime);
+    FieldPoint{num:mul,
     		prime:self.prime}
     }
     pub fn inverse (& mut self)-> FieldPoint {
@@ -37,7 +38,7 @@ impl FieldPoint {
         let mut q:U256;
         while z.num!=U256::one() {
             q=self.prime/z.num;
-            let num=(z.prime-q*z.num)%self.prime;
+            let num=(z.prime-q*z.num).mod_fast(self.prime);
             z=FieldPoint{num:num,prime:self.prime};
             u=FieldPoint::multiple(&u, q).negate();
             //println!("z is {:?}, u is {:?}",z,u);
@@ -45,7 +46,7 @@ impl FieldPoint {
         u
     }
     pub fn rand_mod(p:U256)-> FieldPoint{
-    	let num=U256::random()%p;
+    	let num=U256::random().mod_fast(p);
     	FieldPoint::new(num,p)
     }
 
@@ -188,7 +189,8 @@ impl Add for FieldPoint{
     type Output = Self;
     fn add(self, other: Self) -> Self {
         if self.prime == other.prime {
-            FieldPoint {num: (self.num + other.num)%(self.prime), prime: self.prime}
+            let sum=(self.num+other.num).mod_fast(self.prime);
+            FieldPoint {num: sum, prime: self.prime}
         } else {
             panic!("Cannot add these field points, different prime values {},{}",self.prime,other.prime);
         }
@@ -197,7 +199,7 @@ impl Sub for FieldPoint {
     type Output = Self;
     fn sub(self, other: Self) -> Self {
         if self.prime == other.prime {
-            FieldPoint {num: (self.num + other.negate().num)%(self.prime), prime: self.prime}
+            FieldPoint {num: (self.num + other.negate().num).mod_fast(self.prime), prime: self.prime}
         } else {
             panic!("Cannot subtract these field points, different prime values {},{}",self.prime,other.prime);
         }
@@ -208,7 +210,8 @@ impl Mul for FieldPoint {
     #[inline]
     fn mul(self, other: Self) -> Self {
         if self.prime == other.prime {
-            FieldPoint {num: (self.num*other.num)%(self.prime), prime: self.prime}
+            let mul=(self.num*other.num).mod_fast(self.prime);
+            FieldPoint {num: mul, prime: self.prime}
         } else {
             panic!("Cannot multiply these field points, different prime values, {},{}",self.prime,other.prime);
         }

@@ -9,9 +9,22 @@ construct_uint!{
 pub struct U256(8);
 }
 impl U256{
+    const ORDER:& str = "256";
+    const SIZE:usize = 8;
+    pub fn mod_fast(mut self, rhs: Self) -> Self{
+        let l=Self::from_dec_str(Self::ORDER).expect("error fast modular");
+        let p=Self::from(2).pow(l);
+        let c=p-rhs;
+        while self>=Self::from(2)*rhs {
+            let a0=self&(p-1);
+            let a1=self>>l;
+            self=c*a1+a0;
+            }
+            if self<rhs{return self} else {return self-rhs}
+        }
     pub fn random()->Self {
         let mut rng = rand::thread_rng();
-        let mut v_rand = [0u64; 8];
+        let mut v_rand = [0u64; Self::SIZE];
         rng.fill(&mut v_rand);
         Self(v_rand)
     } 
