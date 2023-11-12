@@ -1,11 +1,11 @@
 
 pub mod scalar256;
-pub mod field_p256k1;
+pub mod field_sm256;
 pub mod implicit_field;
 
 use self::scalar256::{U256,MathResult};
-use self::field_p256k1::FieldP256k1;
-use self::implicit_field::ImplicitP256k1;
+use self::field_sm256::FieldSM256;
+use self::implicit_field::ImplicitSM256;
 use std::ops::Neg;
 
 use crate::affine::AffinePoint;
@@ -17,45 +17,45 @@ use crate::projective::ProjectivePoint;
 
 #[derive(Debug, Clone,Eq,Hash, Copy,PartialEq)]
 /*Structur of elliptic curve p192 */  
-pub struct  P256k1{
+pub struct  SM256{
     pub q:U256,
-    pub a:FieldP256k1,
-    pub b:FieldP256k1,
+    pub a:FieldSM256,
+    pub b:FieldSM256,
 }
 
-impl <'a>CurveParms<'a> for P256k1 {
-    const A:&'a str = "0";
-    const B:&'a str = "7";
-    const XG:&'a str= "55066263022277343669578718895168534326250603453777594175500187360389116729240";
-    const YG:&'a str= "32670510020758816978083085130507043184471273380659243275938904335757337482424";
-    const P:&'a str = "115792089237316195423570985008687907852837564279074904382605163141518161494337";
-    const PRIME_ROOT:&'a str = "7";
+impl <'a>CurveParms<'a> for SM256 {
+    const A:&'a str = "115792089210356248756420345214020892766250353991924191454421193933289684991996";
+    const B:&'a str = "18505919022281880113072981827955639221458448578012075254857346196103069175443";
+    const XG:&'a str= "22963146547237050559479531362550074578802567295341616970375194840604139615431";
+    const YG:&'a str= "85132369209828568825618990617112496413088388631904505083283536607588877201568";
+    const P:&'a str = "115792089210356248756420345214020892766061623724957744567843809356293439045923";
+    const PRIME_ROOT:&'a str = "3";
 }
-impl Curve<FieldP256k1,U256,MathResult> for P256k1 {
+impl Curve<FieldSM256,U256,MathResult> for SM256 {
     fn initialize()->Self {
-        let q=U256::from_dec_str(FieldP256k1::PRIME).expect("error in Prime FieldP256k1 inizializing U256 curve");
-        let a=FieldP256k1::new(U256::from_dec_str(Self::A).expect("Error in coefficient A"));
-        let b=FieldP256k1::new(U256::from_dec_str(Self::B).expect("Error in coefficient B"));
+        let q=U256::from_dec_str(FieldSM256::PRIME).expect("error in Prime FieldSM256 inizializing U256 curve");
+        let a=FieldSM256::new(U256::from_dec_str(Self::A).expect("Error in coefficient A"));
+        let b=FieldSM256::new(U256::from_dec_str(Self::B).expect("Error in coefficient B"));
             
         Self{a:a,b:b,q:q}
     }
-    fn identity(&self)->AffinePoint<FieldP256k1>{
+    fn identity(&self)->AffinePoint<FieldSM256>{
         AffinePoint{ 
-            x: FieldP256k1::zero(), 
-            y: FieldP256k1::one(), 
+            x: FieldSM256::zero(), 
+            y: FieldSM256::one(), 
             infinity: 1 }
     }
-    fn generator(&self)->ProjectivePoint<FieldP256k1> 
+    fn generator(&self)->ProjectivePoint<FieldSM256> 
         {ProjectivePoint {
-            x: FieldP256k1::new(U256::from_dec_str(Self::XG).expect("Error in x generator")),
-            y: FieldP256k1::new(U256::from_dec_str(Self::YG).expect("Error in y generator")),
-            z:FieldP256k1::one(),
+            x: FieldSM256::new(U256::from_dec_str(Self::XG).expect("Error in x generator")),
+            y: FieldSM256::new(U256::from_dec_str(Self::YG).expect("Error in y generator")),
+            z:FieldSM256::one(),
             infinity: 0,}
     }
-    fn ellnegate(&self,p:AffinePoint<FieldP256k1>)->AffinePoint<FieldP256k1> {
+    fn ellnegate(&self,p:AffinePoint<FieldSM256>)->AffinePoint<FieldSM256> {
         AffinePoint { x: p.x, y: p.y.neg(), infinity: p.infinity }
     }
-    fn ellnegate_proj(&self,p:ProjectivePoint<FieldP256k1>)->ProjectivePoint<FieldP256k1> {
+    fn ellnegate_proj(&self,p:ProjectivePoint<FieldSM256>)->ProjectivePoint<FieldSM256> {
         ProjectivePoint { x: p.x, y: p.y.neg(), z:p.z,infinity: p.infinity }
     }
      fn zn_prim_root_gen_order(&self)-> U256{
@@ -65,51 +65,51 @@ impl Curve<FieldP256k1,U256,MathResult> for P256k1 {
         U256::from_dec_str(Self::P).expect("error in generator's order P!")
     }
 
-    fn ellisoncurve(&self,mut p:AffinePoint<FieldP256k1>)->bool {
+    fn ellisoncurve(&self,mut p:AffinePoint<FieldSM256>)->bool {
 /*         let q:U256=U256::from_dec_str(Self::Q).expect("error in Q random");
- */     let a=FieldP256k1::new(U256::from_dec_str(Self::A).expect("error in A"));
-        let b=FieldP256k1::new(U256::from_dec_str(Self::B).expect("error in B"));
+ */     let a=FieldSM256::new(U256::from_dec_str(Self::A).expect("error in A"));
+        let b=FieldSM256::new(U256::from_dec_str(Self::B).expect("error in B"));
         
         let x3=p.x.power(U256::from(3));
         let ax= a*p.x;
         let y2=x3+ax+b;
-        let check:Option<U256>=U256::check_sqrt_mod_prime(y2.num, FieldP256k1::prime());
+        let check:Option<U256>=U256::check_sqrt_mod_prime(y2.num, FieldSM256::prime());
         if check.is_some() {
-            if p.y.num==check.unwrap() || p.y.num==(FieldP256k1::prime()-check.unwrap()) {true} else{false}
+            if p.y.num==check.unwrap() || p.y.num==(FieldSM256::prime()-check.unwrap()) {true} else{false}
         }else{false}
     }
 
-    fn random (&self)->AffinePoint<FieldP256k1> {
-        let mut x:FieldP256k1;
-        let y:FieldP256k1;
-        let a:FieldP256k1=FieldP256k1::new(U256::from_dec_str(Self::A).expect("error in A"));
-        let b:FieldP256k1=FieldP256k1::new(U256::from_dec_str(Self::B).expect("error in B"));
+    fn random (&self)->AffinePoint<FieldSM256> {
+        let mut x:FieldSM256;
+        let y:FieldSM256;
+        let a:FieldSM256=FieldSM256::new(U256::from_dec_str(Self::A).expect("error in A"));
+        let b:FieldSM256=FieldSM256::new(U256::from_dec_str(Self::B).expect("error in B"));
         x=loop{
-            x=FieldP256k1::rand_mod();
-            let x3=FieldP256k1::power(&mut x,U256::from(3));
+            x=FieldSM256::rand_mod();
+            let x3=FieldSM256::power(&mut x,U256::from(3));
             let ax=a*x;
             let y2=x3+ax+b;
-            let r:Option<U256>=U256::check_sqrt_mod_prime(y2.num,FieldP256k1::prime());
+            let r:Option<U256>=U256::check_sqrt_mod_prime(y2.num,FieldSM256::prime());
             if r.is_some() 
-                {y=FieldP256k1::new(r.unwrap());
+                {y=FieldSM256::new(r.unwrap());
                     break x;}
         };
         AffinePoint::new(x,y)    }
 
     fn private_key(&self)->U256 {
-        FieldP256k1::rand_mod().num    }
+        FieldSM256::rand_mod().num    }
 
-    fn public_key(&self,private_key:U256)->AffinePoint<FieldP256k1> {
+    fn public_key(&self,private_key:U256)->AffinePoint<FieldSM256> {
         todo!()
     }
 
-    fn to_affine(&self,mut p:ProjectivePoint<FieldP256k1>)->AffinePoint<FieldP256k1> {
-        let x_aff=p.x*FieldP256k1::inverse( &mut p.z);
-        let y_aff=p.y*FieldP256k1::inverse(&mut p.z);
+    fn to_affine(&self,mut p:ProjectivePoint<FieldSM256>)->AffinePoint<FieldSM256> {
+        let x_aff=p.x*FieldSM256::inverse( &mut p.z);
+        let y_aff=p.y*FieldSM256::inverse(&mut p.z);
         AffinePoint::new(x_aff,y_aff)
     }
 
-    fn jc_to_affine(&self,mut p:ProjectivePoint<FieldP256k1>)->AffinePoint<FieldP256k1> {
+    fn jc_to_affine(&self,mut p:ProjectivePoint<FieldSM256>)->AffinePoint<FieldSM256> {
         let mut inv_z=p.z.inverse();
         let z=inv_z.square();
         let t=z*inv_z;
@@ -118,14 +118,14 @@ impl Curve<FieldP256k1,U256,MathResult> for P256k1 {
     AffinePoint::new(aff_x,aff_y)
     }
 
-    fn proj_identity(&self)->ProjectivePoint<FieldP256k1> {
+    fn proj_identity(&self)->ProjectivePoint<FieldSM256> {
         ProjectivePoint{ 
-            x: FieldP256k1::zero(), 
-            y: FieldP256k1::one(),
-            z: FieldP256k1::zero(), 
+            x: FieldSM256::zero(), 
+            y: FieldSM256::one(),
+            z: FieldSM256::zero(), 
             infinity: 1 }
     }
-    fn proj_elladd_jc(&self,mut p:ProjectivePoint<FieldP256k1>,mut q:ProjectivePoint<FieldP256k1>)->ProjectivePoint<FieldP256k1> {
+    fn proj_elladd_jc(&self,mut p:ProjectivePoint<FieldSM256>,mut q:ProjectivePoint<FieldSM256>)->ProjectivePoint<FieldSM256> {
             /*Jacobian and Chudnovsky Jacobian coordinates
         With Jacobian coordinates the curve E is given by
                     Y^2 = X^3 + a4XZ 4 + a6Z^6 .
@@ -149,38 +149,38 @@ impl Curve<FieldP256k1,U256,MathResult> for P256k1 {
             ProjectivePoint::new(x3,y3,z3)
         }
     }
-    fn elladd(&self,aff_p:AffinePoint<FieldP256k1>,aff_q: AffinePoint<FieldP256k1>)->AffinePoint<FieldP256k1> {
-            //let a4=FieldP256k1::new(U256::from_dec_str(Self::A).expect("error in A elladd"),aff_p.x.prime);
+    fn elladd(&self,aff_p:AffinePoint<FieldSM256>,aff_q: AffinePoint<FieldSM256>)->AffinePoint<FieldSM256> {
+            //let a4=FieldSM256::new(U256::from_dec_str(Self::A).expect("error in A elladd"),aff_p.x.prime);
             //let q=aff_p.x.prime;
             if aff_p==Self::identity(&self) {return aff_q;}
             else if aff_q==Self::identity(self) {return aff_p;}
             else if aff_p==self.ellnegate(aff_q) {return  self.identity();}
     /*         else if q-U256::from(3)==a4.num {self.to_affine(self.proj_elladd_3(proj_p, proj_q))}
      */        else{
-            let proj_p=ProjectivePoint::new(aff_p.x, aff_p.y, FieldP256k1::one());
-            let proj_q=ProjectivePoint::new(aff_q.x, aff_q.y, FieldP256k1::one());
+            let proj_p=ProjectivePoint::new(aff_p.x, aff_p.y, FieldSM256::one());
+            let proj_q=ProjectivePoint::new(aff_q.x, aff_q.y, FieldSM256::one());
             self.jc_to_affine(self.proj_elladd_jc(proj_p, proj_q))}
     
 }
-fn proj_elldouble_jc(&self, proj_p:&mut ProjectivePoint<FieldP256k1>)->ProjectivePoint<FieldP256k1> {
+fn proj_elldouble_jc(&self, proj_p:&mut ProjectivePoint<FieldSM256>)->ProjectivePoint<FieldSM256> {
     
-    let a4:FieldP256k1=FieldP256k1::new(U256::from_dec_str(Self::A).expect("error in A proj_elldouble_jc"));
+    let a4:FieldSM256=FieldSM256::new(U256::from_dec_str(Self::A).expect("error in A proj_elldouble_jc"));
 
-    let mut a=FieldP256k1::multiple(&(proj_p.x*(proj_p.y.square())),U256::from(4));
-    let mut b:FieldP256k1;
-    if FieldP256k1::prime()-U256::from(3)==a4.num {b=FieldP256k1::multiple(&((proj_p.x-proj_p.z.square())*(proj_p.x+proj_p.z.square())),U256::from(3));}
-    else if a4.num==U256::zero(){b=FieldP256k1::multiple(&(proj_p.x.square()), U256::from(3))}
-    else {b=FieldP256k1::multiple(&proj_p.x.square(),U256::from(3))+a4*proj_p.z.power(U256::from(4));}
+    let mut a=FieldSM256::multiple(&(proj_p.x*(proj_p.y.square())),U256::from(4));
+    let mut b:FieldSM256;
+    if FieldSM256::prime()-U256::from(3)==a4.num {b=FieldSM256::multiple(&((proj_p.x-proj_p.z.square())*(proj_p.x+proj_p.z.square())),U256::from(3));}
+    else if a4.num==U256::zero(){b=FieldSM256::multiple(&(proj_p.x.square()), U256::from(3))}
+    else {b=FieldSM256::multiple(&proj_p.x.square(),U256::from(3))+a4*proj_p.z.power(U256::from(4));}
     let x3=b.square()-a.double();
     let y3=-(proj_p.y.power(U256::from(4))).multiple(U256::from(8))+b*(a-x3);
     let z3=proj_p.y*proj_p.z.double();
     ProjectivePoint ::new(x3,y3, z3)
 }
-fn elldouble(&self,aff_p:&mut AffinePoint<FieldP256k1>)->AffinePoint<FieldP256k1> {
-    let mut proj_p=ProjectivePoint::new(aff_p.x, aff_p.y, FieldP256k1::one());
+fn elldouble(&self,aff_p:&mut AffinePoint<FieldSM256>)->AffinePoint<FieldSM256> {
+    let mut proj_p=ProjectivePoint::new(aff_p.x, aff_p.y, FieldSM256::one());
     self.jc_to_affine(self.proj_elldouble_jc(&mut proj_p))
 }
-fn ellmul(&self,p:&mut AffinePoint<FieldP256k1>,k:U256)->AffinePoint<FieldP256k1> {
+fn ellmul(&self,p:&mut AffinePoint<FieldSM256>,k:U256)->AffinePoint<FieldSM256> {
     {
 
         /**************Montgomery ladder******************
@@ -188,7 +188,7 @@ fn ellmul(&self,p:&mut AffinePoint<FieldP256k1>,k:U256)->AffinePoint<FieldP256k1
 Algorithm 3. */
 
 let mut p0=self.proj_identity();
-let mut p1= ProjectivePoint::new(p.x,p.y,FieldP256k1::one());
+let mut p1= ProjectivePoint::new(p.x,p.y,FieldSM256::one());
 let bin=U256::to_binary(k);
 for i in bin.iter(){
     if *i==U256::zero(){
@@ -203,23 +203,23 @@ for i in bin.iter(){
 }   
 
 }
-fn bsgs(&self, gen:&mut AffinePoint<FieldP256k1>,q:&mut AffinePoint<FieldP256k1>, d:U256)->MathResult {
+fn bsgs(&self, gen:&mut AffinePoint<FieldSM256>,q:&mut AffinePoint<FieldSM256>, d:U256)->MathResult {
         //This is the order of the generator point gen, it is calculated in pari-gp
 	let ord:U256 = self.gen_order();
-	//let mut z = FieldP256k1::znprimroot(&ord); /*generatore di Fp* dove p=ord(E,P)*/
+	//let mut z = FieldSM256::znprimroot(&ord); /*generatore di Fp* dove p=ord(E,P)*/
 	//This is a primitive root mod p, it is calculated in pari-gp
-	let mut z= ImplicitP256k1::new(U256::from(self.zn_prim_root_gen_order()));
-	let mut zd = ImplicitP256k1::power(&mut z,(ord-U256::one())/d);
+	let mut z= ImplicitSM256::new(U256::from(self.zn_prim_root_gen_order()));
+	let mut zd = ImplicitSM256::power(&mut z,(ord-U256::one())/d);
 	//calculate the inverse of the d-order generator
     let mut inv_zd=zd.inverse();
 	let mut res:MathResult=None;
-    let mut bs: Vec<(u128,AffinePoint<FieldP256k1>)>=Vec::new();
-    let mut gs: Vec<(u128,AffinePoint<FieldP256k1>)>=Vec::new();
+    let mut bs: Vec<(u128,AffinePoint<FieldSM256>)>=Vec::new();
+    let mut gs: Vec<(u128,AffinePoint<FieldSM256>)>=Vec::new();
 	let  m =U256::integer_sqrt(&d)+U256::one();//ceil(d)
 	'outer: for i in 0..m.as_u128() {
-        bs.push((i,self.ellmul(gen, ImplicitP256k1::power(&mut zd,U256::from(i)).num)));
-        bs.sort_by_key(|key: &(u128, AffinePoint<FieldP256k1>)| key.1 );
-		gs.push((i,self.ellmul(q,ImplicitP256k1::power(&mut inv_zd,m*U256::from(i)).num)));
+        bs.push((i,self.ellmul(gen, ImplicitSM256::power(&mut zd,U256::from(i)).num)));
+        bs.sort_by_key(|key: &(u128, AffinePoint<FieldSM256>)| key.1 );
+		gs.push((i,self.ellmul(q,ImplicitSM256::power(&mut inv_zd,m*U256::from(i)).num)));
         for j in 0..bs.len(){
 			let search=bs.binary_search_by_key(&gs[j].1,|&(_a,b)|b);
             if search.is_ok()
@@ -229,7 +229,7 @@ fn bsgs(&self, gen:&mut AffinePoint<FieldP256k1>,q:&mut AffinePoint<FieldP256k1>
             let i =gs[j].0;
             let j=bs[search.unwrap()].0;
             println!("Baby Step Giant Step found a match:i={},j={}",i,j);
-			let alpha=ImplicitP256k1::power(&mut zd,m*U256::from(i)+U256::from(j)%d);
+			let alpha=ImplicitSM256::power(&mut zd,m*U256::from(i)+U256::from(j)%d);
 			println!("The key is weak. Your secret key is {}",alpha.num);
             res=Some(alpha.num);
 			break 'outer;

@@ -1,85 +1,48 @@
-use crate::projective::ProjectivePoint;
-use crate::scalar::{U256,MathResult};
-use crate::field::FieldPoint;
-use crate::affine::AffinePoint;
-#[derive(Debug, Clone,Eq,Hash, Copy,PartialEq)]
+use crate::{affine::AffinePoint, projective::ProjectivePoint};
+
+/* #[derive(Debug, Clone,Eq,Hash, Copy,PartialEq)]
 pub struct Ellinit{
     pub a:FieldPoint,
     pub b:FieldPoint,
     pub q:U256
-}
-pub type Ell=Ellinit;
+} */
 pub trait CurveParms<'a>{    
     //required//
     
-    const Q:&'a str;
-    const A:&'a str;
+/*     const Q:&'a str;
+ */    const A:&'a str;
     const B:&'a str;
-    fn generator(&self)->ProjectivePoint;
-    fn identity(&self)->AffinePoint;
-    fn zn_prim_root_gen_order(&self)->U256;
-    fn gen_order(&self)->U256;
-
-    fn ellisoncurve(&self,mut p:AffinePoint)->bool {
-        let q:U256=U256::from_dec_str(Self::Q).expect("error in Q random");
-        let a:FieldPoint=FieldPoint::new(U256::from_dec_str(Self::A).expect("error in Q random"),q);
-        let b:FieldPoint=FieldPoint::new(U256::from_dec_str(Self::B).expect("error in Q random"),q);
-        
-        let x3=FieldPoint::power( &mut p.x, U256::from(3));
-        let ax= a*p.x;
-        let y2=x3+ax+b;
-        let check:Option<U256>=U256::check_sqrt_mod_prime(y2.num, q);
-        if check.is_some() {
-            if p.y.num==check.unwrap() || p.y.num==(p.y.prime-check.unwrap()) {true} else{false}
-        }else{false}
-    }
-
-    fn random (&self)->AffinePoint{
-        let mut x:FieldPoint;
-        let y:FieldPoint;
-        let q:U256=U256::from_dec_str(Self::Q).expect("error in Q random");
-        let a:FieldPoint=FieldPoint::new(U256::from_dec_str(Self::A).expect("error in Q random"),q);
-        let b:FieldPoint=FieldPoint::new(U256::from_dec_str(Self::B).expect("error in Q random"),q);
-
-        x=loop{
-            x=FieldPoint::rand_mod(q);
-            let x3=FieldPoint::power(&mut x,U256::from(3));
-            let ax=a*x;
-            let y2=x3+ax+b;
-            let r:Option<U256>=U256::check_sqrt_mod_prime(y2.num,x.prime);
-            if r.is_some() 
-                {y=FieldPoint::new(r.unwrap(), x.prime);
-                    break x;}
-        };
-        AffinePoint::new(x,y)
-    }
-    fn private_key(&self)->U256{
-        let q:U256=U256::from_dec_str(Self::Q).expect("error in Q random");
-        FieldPoint::rand_mod(q).num
-    }
-    fn public_key(&self,private_key:U256)->AffinePoint{
-        self.ellmul(&mut self.to_affine(self.generator()), private_key)
-    }
-    fn to_affine(&self,mut p:ProjectivePoint)->AffinePoint{
-        let x_aff=p.x*FieldPoint::inverse( &mut p.z);
-        let y_aff=p.y*FieldPoint::inverse(&mut p.z);
-        AffinePoint::new(x_aff,y_aff)
-    }
-    fn jc_to_affine(&self,mut p:ProjectivePoint)->AffinePoint{
-        let mut inv_z=p.z.inverse();
-        let z=inv_z.square();
-        let t=z*inv_z;
-        let aff_x=p.x*z;
-        let aff_y=p.y*t;
-    AffinePoint::new(aff_x,aff_y)
+    const XG:&'a str;
+    const YG:&'a str;
+    const P:&'a str;
+    const PRIME_ROOT:&'a str;
 }
-    fn proj_identity(&self)->ProjectivePoint {
-        ProjectivePoint{ 
-            x: FieldPoint{num:U256::zero(),prime:self.identity().x.prime}, 
-            y: FieldPoint{num:U256::zero(),prime:self.identity().x.prime},
-            z: FieldPoint{num:U256::zero(),prime:self.identity().x.prime}, 
-            infinity: 1 }
-    }
+pub trait Curve <FieldPoint,Scalar,MathResult>{
+    fn initialize()->Self;
+    fn generator(&self)->ProjectivePoint<FieldPoint>;
+    fn identity(&self)->AffinePoint<FieldPoint>;
+    fn zn_prim_root_gen_order(&self)->Scalar;
+    fn gen_order(&self)->Scalar;
+    fn ellnegate(&self,p:AffinePoint<FieldPoint>)->AffinePoint<FieldPoint>;
+    fn ellnegate_proj(&self,p:ProjectivePoint<FieldPoint>)->ProjectivePoint<FieldPoint>;
+    fn ellisoncurve(&self,p:AffinePoint<FieldPoint>)->bool;
+    fn random (&self)->AffinePoint<FieldPoint>;
+    fn private_key(&self)->Scalar;
+    fn public_key(&self,private_key:Scalar)->AffinePoint<FieldPoint>;
+    fn to_affine(&self,p:ProjectivePoint<FieldPoint>)->AffinePoint<FieldPoint>;
+    fn jc_to_affine(&self,p:ProjectivePoint<FieldPoint>)->AffinePoint<FieldPoint>;
+    fn proj_identity(&self)->ProjectivePoint<FieldPoint>;
+    fn proj_elladd_jc(&self,p:ProjectivePoint<FieldPoint>,q:ProjectivePoint<FieldPoint>)->ProjectivePoint<FieldPoint>;
+    fn elladd(&self,aff_p:AffinePoint<FieldPoint>,aff_q: AffinePoint<FieldPoint>)->AffinePoint<FieldPoint>;
+    fn proj_elldouble_jc(&self, proj_p:&mut ProjectivePoint<FieldPoint>)->ProjectivePoint<FieldPoint>;
+    fn elldouble(&self,aff_p:&mut AffinePoint<FieldPoint>)->AffinePoint<FieldPoint>;
+    fn ellmul(&self,p:&mut AffinePoint<FieldPoint>,k:Scalar)->AffinePoint<FieldPoint>;
+            /*Implicit baby-step-giant-step algorithm */
+    fn bsgs(&self, gen:&mut AffinePoint<FieldPoint>,q:&mut AffinePoint<FieldPoint>, d:Scalar)->MathResult;
+
+}
+  /*   
+
     fn elladd(&self,aff_p:AffinePoint,aff_q: AffinePoint)->AffinePoint{
         
         //let a4=FieldPoint::new(U256::from_dec_str(Self::A).expect("error in A elladd"),aff_p.x.prime);
@@ -206,3 +169,4 @@ impl Ellinit {
 
 
 
+ */
