@@ -1,11 +1,11 @@
 
 pub mod scalar224;
 pub mod field_p224;
-pub mod implicit_field;
+pub mod implicit_group;
 
 use self::scalar224::{U224,MathResult};
 use self::field_p224::FieldP224;
-use self::implicit_field::ImplicitP224;
+use self::implicit_group::ImplicitP224;
 use std::ops::Neg;
 
 use crate::affine::AffinePoint;

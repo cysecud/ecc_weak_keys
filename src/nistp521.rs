@@ -1,11 +1,11 @@
 
 pub mod scalar521;
 pub mod field_p521;
-pub mod implicit_field;
+pub mod implicit_group;
 
 use self::scalar521::{U521,MathResult};
 use self::field_p521::FieldP521;
-use self::implicit_field::ImplicitP521;
+use self::implicit_group::ImplicitP521;
 use std::ops::Neg;
 
 use crate::affine::AffinePoint;

@@ -1,11 +1,11 @@
 
 pub mod scalar384;
 pub mod field_p384;
-pub mod implicit_field;
+pub mod implicit_group;
 
 use self::scalar384::{U384,MathResult};
 use self::field_p384::FieldP384;
-use self::implicit_field::ImplicitP384;
+use self::implicit_group::ImplicitP384;
 use std::ops::Neg;
 
 use crate::affine::AffinePoint;

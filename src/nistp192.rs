@@ -1,11 +1,11 @@
 
 pub mod scalar192;
 pub mod field_p192;
-pub mod implicit_field;
+pub mod implicit_group;
 
 use self::scalar192::{U192,MathResult};
 use self::field_p192::FieldP192;
-use self::implicit_field::ImplicitP192;
+use self::implicit_group::ImplicitP192;
 use std::ops::Neg;
 
 use crate::FieldElement;

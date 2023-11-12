@@ -1,11 +1,11 @@
 
 pub mod scalar256;
 pub mod field_p256r1;
-pub mod implicit_field;
+pub mod implicit_group;
 
 use self::scalar256::{U256,MathResult};
 use self::field_p256r1::FieldP256r1;
-use self::implicit_field::ImplicitP256r1;
+use self::implicit_group::ImplicitP256r1;
 use std::ops::Neg;
 
 use crate::affine::AffinePoint;
