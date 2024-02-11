@@ -16,7 +16,7 @@ use crate::projective::ProjectivePoint;
 
 
 #[derive(Debug, Clone,Eq,Hash, Copy,PartialEq)]
-/*Structur of elliptic curve p192 */  
+/*Structur of elliptic curve P224 */  
 pub struct  P224{
     pub q:U224,
     pub a:FieldP224,
@@ -238,25 +238,20 @@ fn bsgs(&self,q:&mut AffinePoint<FieldP224>, d:U224)->MathResult {
 }          
 
 }
+impl P224 {
+    pub fn test_key(&self, q:&mut AffinePoint<FieldP224>,bound:usize)->Option<U224>{
+        let div :Vec<U224>=match bound {
+            32usize|64usize|128usize|160usize => ImplicitP224::DIVISOR_32.iter().map(|x| U224::from_dec_str(x).expect("error in divisor 32")).collect(),
+            _=>panic!("bound must be a usize 32, 64,128 or 160!")
+            
+        };
+        println!("div is {:?}",div);
+        for item in div {
+            let alfa=self.bsgs(q, item);
+            if alfa.is_some() {return alfa}
 
-
-/*
-Order of the generator is calculted in pari-gp: ellorder(E,P)
-PRIME_ROOT is calculated in pari gp: znprimroot(p).
-This is the factorisation of p-1 and can be use to test your key 
-with the implicit baby step giant step
-
-The factorisation of p-1 is 
-
-[                           2 4]
-
-[                           5 1]
-
-[                        2389 1]
-
-[   9564682313913860059195669 1]
-
-[3433859179316188682119986911 1]
-
-
-*/
+        }
+        None
+        
+    }
+}

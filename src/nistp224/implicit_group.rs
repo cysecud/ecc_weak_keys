@@ -7,6 +7,12 @@ use super::scalar224::U224;
 pub struct ImplicitP224{
     pub num:U224,
 }
+impl ImplicitP224{
+    pub const DIVISOR_32:[&str; 1]=["533642580"];
+    /*DIVISOR_64, DIVISOR_128, DIVISOR_160 are the same as DIVISOR_32.
+    They are computed by using Pari_gp*/
+}
+
 impl Add for ImplicitP224{
     type Output = Self;
     fn add(self:Self,rhs:Self) -> Self::Output{

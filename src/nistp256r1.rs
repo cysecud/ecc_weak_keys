@@ -238,25 +238,23 @@ fn bsgs(&self,q:&mut AffinePoint<FieldP256r1>, d:U256)->MathResult {
 }          
 
 }
+impl P256r1 {
+    pub fn test_key(&self, q:&mut AffinePoint<FieldP256r1>,bound:usize)->Option<U256>{
+        let div :Vec<U256>=match bound {
+            32usize => ImplicitP256r1::DIVISOR_32.iter().map(|x| U256::from_dec_str(x).expect("error in divisor 32")).collect(),
+            64usize => ImplicitP256r1::DIVISOR_64.iter().map(|x| U256::from_dec_str(x).expect("error in divisor 64")).collect(),
+            128usize => ImplicitP256r1::DIVISOR_128.iter().map(|x| U256::from_dec_str(x).expect("error in divisor 128")).collect(),
+            160usize => ImplicitP256r1::DIVISOR_160.iter().map(|x| U256::from_dec_str(x).expect("error in divisor 160")).collect(),
 
-
-/*
-Order of the generator is calculted in pari-gp: ellorder(E,P)
-PRIME_ROOT is calculated in pari gp: znprimroot(p).
-This is the factorisation of p-1 and can be use to test your key 
-with the implicit baby step giant step
-
-The factorisation of p-1 is 
-
-[                           2 4]
-
-[                           5 1]
-
-[                        2389 1]
-
-[   9564682313913860059195669 1]
-
-[3433859179316188682119986911 1]
-
-
-*/
+            _=>panic!("bound must be a usize 32, 64,128 or 160!")
+            
+        };
+        println!("div is {:?}",div);
+        for item in div {
+            let alfa=self.bsgs(q, item);
+            if alfa.is_some() {return alfa}
+        }
+        None
+        
+    }
+}
