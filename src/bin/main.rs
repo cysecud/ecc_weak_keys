@@ -7,30 +7,17 @@ use elliptic_curves::nistp521::{field_p521::FieldP521,scalar521::U521,P521};
 
 fn main () {   
         /*Test Field192 */ 
-let mut a=FieldP192::rand_mod();
-let  c=FieldP192::rand_mod();
-let sum=a*c;
-let inv =a.inverse();
-println!("inverse of {} is {}",a.num,inv.num);
-println!("Field192 prime base is {}",FieldP192::prime());
-println!("{}*{}={}",a.num,c.num,sum.num);
+
 let p192=P192::initialize();
 println!("gen p192 {:?}",p192.generator());
 println!("identity p192 {:?}",p192.identity());
-let mut x=p192.random();
-let mut ison:bool=p192.ellisoncurve(x);
-    if ison {println!("Point is on curve")} else {println!("Point NOT on the curve")};
-let y=p192.random();
-let sum = p192.elladd(x, y);
-println!("{:?}+{:?}={:?}",x,y,sum);
-let doub=p192.elldouble(&mut x);
-println!("double of {:?}={:?}",x,doub);
-let k=U192::from_dec_str("35692188470218831599429521488958156389612077476752115046").expect("error");
-let mut mult=p192.ellmul(&mut p192.to_affine(p192.generator()), k);
-println!("Point to be tested is {:?}",mult);
-let d=U192::from(16);
-let alpha=p192.bsgs(&mut p192.to_affine(p192.generator()), &mut mult, d);
+let k=U192::from_dec_str("660030383589324870219750734194914084298741076151362022398").expect("error");
+let mut pub_key=p192.ellmul(&mut p192.to_affine(p192.generator()), k);
+println!("Point to be tested is {:?}",pub_key);
 
+let alpha=p192.test_key( &mut pub_key, 32);
+//println!("alpha");
+/* 
     /*Test Field224 */ 
 let mut a=FieldP224::rand_mod();
 let  c=FieldP224::rand_mod();
@@ -55,6 +42,7 @@ let mut mult=p224.ellmul(&mut p224.to_affine(p224.generator()), k);
 println!("Point to be tested is {:?}",mult);
 let d=U224::from(12);
 let alpha=p224.bsgs(&mut p224.to_affine(p224.generator()), &mut mult, d);
+ */
 /*          
             /*Test Field256k1 */ 
 let mut a=FieldP256k1::rand_mod();

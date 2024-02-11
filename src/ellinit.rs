@@ -38,7 +38,7 @@ pub trait Curve <FieldPoint,Scalar,MathResult>{
     fn elldouble(&self,aff_p:&mut AffinePoint<FieldPoint>)->AffinePoint<FieldPoint>;
     fn ellmul(&self,p:&mut AffinePoint<FieldPoint>,k:Scalar)->AffinePoint<FieldPoint>;
             /*Implicit baby-step-giant-step algorithm */
-    fn bsgs(&self, gen:&mut AffinePoint<FieldPoint>,q:&mut AffinePoint<FieldPoint>, d:Scalar)->MathResult;
+    fn bsgs(&self,q:&mut AffinePoint<FieldPoint>, d:Scalar)->MathResult;
 
 }
   /*   

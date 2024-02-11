@@ -203,7 +203,7 @@ for i in bin.iter(){
 }   
 
 }
-fn bsgs(&self, gen:&mut AffinePoint<FieldP224>,q:&mut AffinePoint<FieldP224>, d:U224)->MathResult {
+fn bsgs(&self,q:&mut AffinePoint<FieldP224>, d:U224)->MathResult {
         //This is the order of the generator point gen, it is calculated in pari-gp
 	let ord:U224 = self.gen_order();
 	//let mut z = FieldP224::znprimroot(&ord); /*generatore di Fp* dove p=ord(E,P)*/
@@ -217,7 +217,7 @@ fn bsgs(&self, gen:&mut AffinePoint<FieldP224>,q:&mut AffinePoint<FieldP224>, d:
     let mut gs: Vec<(u128,AffinePoint<FieldP224>)>=Vec::new();
 	let  m =U224::integer_sqrt(&d)+U224::one();//ceil(d)
 	'outer: for i in 0..m.as_u128() {
-        bs.push((i,self.ellmul(gen, ImplicitP224::power(&mut zd,U224::from(i)).num)));
+        bs.push((i,self.ellmul(&mut self.jc_to_affine(self.generator()), ImplicitP224::power(&mut zd,U224::from(i)).num)));
         bs.sort_by_key(|key: &(u128, AffinePoint<FieldP224>)| key.1 );
 		gs.push((i,self.ellmul(q,ImplicitP224::power(&mut inv_zd,m*U224::from(i)).num)));
         for j in 0..bs.len(){

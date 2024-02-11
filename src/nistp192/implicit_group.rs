@@ -7,6 +7,13 @@ use super::scalar192::U192;
 pub struct ImplicitP192{
     pub num:U192,
 }
+impl ImplicitP192{
+    pub const DIVISOR_32:[&str; 1]=["191120"];
+    //DIVISOR_64 is the same as 32
+    pub const DIVISOR_128:[&str;2]=["1828002083835216934513476259280", "656279166350909980926771898430320"];
+    //DIVISOR_160 is the same as 128
+}
+
 impl Add for ImplicitP192{
     type Output = Self;
     fn add(self:Self,rhs:Self) -> Self::Output{

@@ -7,6 +7,7 @@ use self::scalar192::{U192,MathResult};
 use self::field_p192::FieldP192;
 use self::implicit_group::ImplicitP192;
 use std::ops::Neg;
+use std::str::FromStr;
 
 use crate::FieldElement;
 use crate::ellinit::CurveParms;
@@ -202,7 +203,7 @@ for i in bin.iter(){
 }   
 
 }
-fn bsgs(&self, gen:&mut AffinePoint<FieldP192>,q:&mut AffinePoint<FieldP192>, d:U192)->MathResult {
+fn bsgs(&self,q:&mut AffinePoint<FieldP192>, d:U192)->Option<U192> {
         //This is the order of the generator point gen, it is calculated in pari-gp
 	let ord:U192 = self.gen_order();
 	//let mut z = FieldP192::znprimroot(&ord); /*generatore di Fp* dove p=ord(E,P)*/
@@ -216,7 +217,7 @@ fn bsgs(&self, gen:&mut AffinePoint<FieldP192>,q:&mut AffinePoint<FieldP192>, d:
     let mut gs: Vec<(u128,AffinePoint<FieldP192>)>=Vec::new();
 	let  m =U192::integer_sqrt(&d)+U192::one();//ceil(d)
 	'outer: for i in 0..m.as_u128() {
-        bs.push((i,self.ellmul(gen, ImplicitP192::power(&mut zd,U192::from(i)).num)));
+        bs.push((i,self.ellmul(&mut self.jc_to_affine(self.generator()), ImplicitP192::power(&mut zd,U192::from(i)).num)));
         bs.sort_by_key(|key: &(u128, AffinePoint<FieldP192>)| key.1 );
 		gs.push((i,self.ellmul(q,ImplicitP192::power(&mut inv_zd,m*U192::from(i)).num)));
         for j in 0..bs.len(){
@@ -237,7 +238,24 @@ fn bsgs(&self, gen:&mut AffinePoint<FieldP192>,q:&mut AffinePoint<FieldP192>, d:
 }          
 
 }
+impl P192 {
+    pub fn test_key(&self, q:&mut AffinePoint<FieldP192>,bound:usize)->Option<U192>{
+        let div :Vec<U192>=match bound {
+            32usize => ImplicitP192::DIVISOR_32.iter().map(|x| U192::from_dec_str(x).expect("error in divisor 32")).collect(),
+            128usize=>ImplicitP192::DIVISOR_128.iter().map(|x| U192::from_dec_str(x).expect("error in divisor 128")).collect(),
+            _=>panic!("bound must be a usize 32, 64,128 or 160!")
+            
+        };
+        println!("div is {:?}",div);
+        for item in div {
+            let alfa=self.bsgs(q, item);
+            if alfa.is_some() {return alfa}
 
+        }
+        None
+        
+    }
+}
 
 /*
 Order of the generator is calculted in pari-gp: ellorder(E,P)
