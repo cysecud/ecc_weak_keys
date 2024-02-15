@@ -11,12 +11,15 @@ fn main () {
 let p192=P192::initialize();
 println!("gen p192 {:?}",p192.generator());
 println!("identity p192 {:?}",p192.identity());
-let k=U192::from_dec_str("660030383589324870219750734194914084298741076151362022398").expect("error");
+//let k=U192::from_dec_str("660030383589324870219750734194914084298741076151362022398").expect("error");
+
+let k=U192::from_dec_str("3902464043483517614357752686118068675663797609365657037670").expect("error");
 let mut pub_key=p192.ellmul(&mut p192.to_affine(p192.generator()), k);
 println!("Point to be tested is {:?}",pub_key);
+let alpha=p192.bsgs(&mut pub_key, U192::from(16u32));
 
-let alpha=p192.test_key( &mut pub_key, 32);
-//println!("alpha");
+//let alpha=p192.test_key( &mut pub_key, 32);
+println!("alpha");
 /* 
     /*Test Field224 */ 
 let mut a=FieldP224::rand_mod();
