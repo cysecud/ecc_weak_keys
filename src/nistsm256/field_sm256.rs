@@ -35,6 +35,7 @@ impl Sub for FieldSM256{
 }
 impl <'a>FieldElement<'a,U256> for FieldSM256{
     const PRIME:&'a str ="115792089210356248756420345214020892766250353991924191454421193933289684991999" ;
+    const PRIME_ROOT:&'a str = "13";
     fn zero()->Self {
         Self { num: U256::zero() }
     }

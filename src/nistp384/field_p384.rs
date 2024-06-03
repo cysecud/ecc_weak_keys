@@ -36,6 +36,7 @@ impl Sub for FieldP384{
 }
 impl <'a>FieldElement<'a,U384> for FieldP384{
     const PRIME:&'a str ="39402006196394479212279040100143613805079739270465446667948293404245721771496870329047266088258938001861606973112319" ;
+    const PRIME_ROOT:&'a str = "19";
     fn zero()->Self {
         FieldP384 { num: U384::zero() }
     }

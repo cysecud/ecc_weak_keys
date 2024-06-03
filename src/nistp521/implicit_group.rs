@@ -37,6 +37,7 @@ impl Sub for ImplicitP521{
 }
 impl <'a>FieldElement<'a,U521> for ImplicitP521{
     const PRIME:&'a str ="6864797660130609714981900799081393217269435300143305409394463459185543183397655394245057746333217197532963996371363321113864768612440380340372808892707005449";
+    const PRIME_ROOT:&'a str = "3";
     fn zero()->Self {
         Self { num: U521::zero() }
     }
@@ -76,19 +77,13 @@ impl <'a>FieldElement<'a,U521> for ImplicitP521{
             if *i==U521::zero() {
                 p1=p1*p0;
                 p0=p0.square();
-                
-                /* println!("p0 is {:?}",p0);
-                println!("p1 is {:?}",p1); */
             }
             else {
                 p0=p0*p1;
                 p1=p1.square();
-              /*   println!("p0 is {:?}",p0);
-                println!("p1 is {:?}",p1); */
                 }
         }
-        p0
-        
+        p0 
     }
     fn inverse (&mut self)-> ImplicitP521 {
         ImplicitP521::power(self, Self::prime()-U521::from(2))

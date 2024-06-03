@@ -10,7 +10,7 @@ use std::ops::Neg;
 
 use crate::affine::AffinePoint;
 use crate::FieldElement;
-use crate::ellinit::CurveParms;
+use crate::ellinit::{CurveParms, KeyPairs};
 use crate::ellinit::Curve;
 use crate::projective::ProjectivePoint;
 
@@ -22,14 +22,11 @@ pub struct  P521{
     pub a:FieldP521,
     pub b:FieldP521,
 }
-
 impl <'a>CurveParms<'a> for P521 {
     const A:&'a str = "6864797660130609714981900799081393217269435300143305409394463459185543183397656052122559640661454554977296311391480858037121987999716643812574028291115057148";
     const B:&'a str = "1093849038073734274511112390766805569936207598951683748994586394495953116150735016013708737573759623248592132296706313309438452531591012912142327488478985984";
     const XG:&'a str= "2661740802050217063228768716723360960729859168756973147706671368418802944996427808491545080627771902352094241225065558662157113545570916814161637315895999846";
     const YG:&'a str= "3757180025770020463545507224491183603594455134769762486694567779615544477440556316691234405012945539562144444537289428522585666729196580810124344277578376784";
-    const P:&'a str = "6864797660130609714981900799081393217269435300143305409394463459185543183397655394245057746333217197532963996371363321113864768612440380340372808892707005449";
-    const PRIME_ROOT:&'a str = "3";
 }
 impl Curve<FieldP521,U521,MathResult> for P521 {
     fn initialize()->Self {
@@ -59,15 +56,14 @@ impl Curve<FieldP521,U521,MathResult> for P521 {
         ProjectivePoint { x: p.x, y: p.y.neg(), z:p.z,infinity: p.infinity }
     }
      fn zn_prim_root_gen_order(&self)-> U521{
-            U521::from_dec_str(Self::PRIME_ROOT).expect("error in primitive root of generator's order!")
+            U521::from_dec_str(ImplicitP521::PRIME_ROOT).expect("error in primitive root of generator's order!")
     }
      fn gen_order(&self)-> U521{
-        U521::from_dec_str(Self::P).expect("error in generator's order P!")
+        U521::from_dec_str(ImplicitP521::PRIME).expect("error in generator's order P!")
     }
 
     fn ellisoncurve(&self,mut p:AffinePoint<FieldP521>)->bool {
-/*         let q:U521=U521::from_dec_str(Self::Q).expect("error in Q random");
- */     let a=FieldP521::new(U521::from_dec_str(Self::A).expect("error in A"));
+        let a=FieldP521::new(U521::from_dec_str(Self::A).expect("error in A"));
         let b=FieldP521::new(U521::from_dec_str(Self::B).expect("error in B"));
         
         let x3=p.x.power(U521::from(3));
@@ -99,8 +95,10 @@ impl Curve<FieldP521,U521,MathResult> for P521 {
     fn private_key(&self)->U521 {
         FieldP521::rand_mod().num    }
 
-    fn public_key(&self,private_key:U521)->AffinePoint<FieldP521> {
-        todo!()
+    fn key_pairs(&self)->KeyPairs<U521,AffinePoint<FieldP521>> {
+            let sk=self.private_key();
+            let pk = self.ellmul(&mut self.to_affine(self.generator()), sk);
+            KeyPairs{sk,pk}
     }
 
     fn to_affine(&self,mut p:ProjectivePoint<FieldP521>)->AffinePoint<FieldP521> {
@@ -224,8 +222,6 @@ fn bsgs(&self, q:&mut AffinePoint<FieldP521>, d:U521)->MathResult {
 			let search=bs.binary_search_by_key(&gs[j].1,|&(_a,b)|b);
             if search.is_ok()
 			{
-               println!("bs is {:?}",bs[search.unwrap()]);
-                println!("gs is {:?}",gs[j]);
             let i =gs[j].0;
             let j=bs[search.unwrap()].0;
             println!("Baby Step Giant Step found a match:i={},j={}",i,j);

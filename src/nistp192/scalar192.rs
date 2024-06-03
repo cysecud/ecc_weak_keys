@@ -22,8 +22,7 @@ pub enum MathError {
 
 
 impl U192 {
-    const SIZE:usize=6;
-    const ORDER:&str="192";
+    
     /*Algorithm 1 Crandall [https://eprint.iacr.org/2022/411.pdf] 
     Pseudo Mersenne Numbers are integers of the form q = 2^l − c,
     where c is ”small”. An algorithm to computhe their modular reduction is introduced by Crandall*/

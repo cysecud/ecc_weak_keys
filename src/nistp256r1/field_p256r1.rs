@@ -34,7 +34,8 @@ impl Sub for FieldP256r1{
     }
 }
 impl <'a>FieldElement<'a,U256> for FieldP256r1{
-    const PRIME:&'a str ="115792089237316195423570985008687907853269984665640564039457584007908834671663" ;
+    const PRIME:&'a str ="115792089210356248762697446949407573530086143415290314195533631308867097853951";
+    const PRIME_ROOT:&'a str = "3";
     fn zero()->Self {
         Self { num: U256::zero() }
     }

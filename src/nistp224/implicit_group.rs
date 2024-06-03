@@ -41,6 +41,7 @@ impl Sub for ImplicitP224{
 }
 impl <'a>FieldElement<'a,U224> for ImplicitP224{
     const PRIME:&'a str ="26959946667150639794667015087019625940457807714424391721682722368061";
+    const PRIME_ROOT:&'a str = "2";
     fn zero()->Self {
         Self { num: U224::zero() }
     }

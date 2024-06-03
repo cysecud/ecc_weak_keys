@@ -34,7 +34,8 @@ impl Sub for ImplicitSM256{
         }  
 }
 impl <'a>FieldElement<'a,U256> for ImplicitSM256{
-    const PRIME:&'a str ="115792089210356248762697446949407573529996955224135760342422259061068512044369";
+    const PRIME:&'a str ="115792089210356248756420345214020892766061623724957744567843809356293439045923";
+    const PRIME_ROOT:&'a str = "3";
     fn zero()->Self {
         Self { num: U256::zero() }
     }

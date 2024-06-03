@@ -41,7 +41,8 @@ impl Sub for ImplicitP192{
         }  
 }
 impl <'a>FieldElement<'a,U192> for ImplicitP192{
-    const PRIME:&'a str ="6277101735386680763835789423176059013767194773182842284081" ;
+    const PRIME:&'a str ="6277101735386680763835789423176059013767194773182842284081";
+    const PRIME_ROOT:&'a str = "3";
     fn zero()->Self {
         Self { num: U192::zero() }
     }

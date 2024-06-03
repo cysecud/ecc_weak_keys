@@ -7,10 +7,9 @@ use self::scalar192::{U192,MathResult};
 use self::field_p192::FieldP192;
 use self::implicit_group::ImplicitP192;
 use std::ops::Neg;
-use std::str::FromStr;
 
 use crate::FieldElement;
-use crate::ellinit::CurveParms;
+use crate::ellinit::{CurveParms, KeyPairs};
 use crate::ellinit::Curve;
 use crate::projective::ProjectivePoint;
 use crate::affine::AffinePoint;
@@ -22,14 +21,12 @@ pub struct  P192{
     pub a:FieldP192,
     pub b:FieldP192,
 }
+
 impl <'a>CurveParms<'a> for P192 {
-/*     const Q:&'a str= "6277101735386680763835789423207666416083908700390324961279"; 
- */    const A:&'a str = "6277101735386680763835789423207666416083908700390324961276";
+    const A:&'a str = "6277101735386680763835789423207666416083908700390324961276";
     const B:&'a str = "2455155546008943817740293915197451784769108058161191238065";
     const XG:&'a str= "602046282375688656758213480587526111916698976636884684818";
     const YG:&'a str= "174050332293622031404857552280219410364023488927386650641";
-    const P:&'a str= "6277101735386680763835789423176059013767194773182842284081";
-    const PRIME_ROOT:&'a str="3";
 }
 impl Curve<FieldP192,U192,MathResult> for P192 {
     fn initialize()->Self {
@@ -59,10 +56,10 @@ impl Curve<FieldP192,U192,MathResult> for P192 {
         ProjectivePoint { x: p.x, y: p.y.neg(), z:p.z,infinity: p.infinity }
     }
      fn zn_prim_root_gen_order(&self)-> U192{
-            U192::from_dec_str(Self::PRIME_ROOT).expect("error in primitive root of generator's order!")
+            U192::from_dec_str(ImplicitP192::PRIME_ROOT).expect("error in primitive root of generator's order!")
     }
      fn gen_order(&self)-> U192{
-        U192::from_dec_str(Self::P).expect("error in generator's order P!")
+        U192::from_dec_str(ImplicitP192::PRIME).expect("error in generator's order P!")
     }
 
     fn ellisoncurve(&self,mut p:AffinePoint<FieldP192>)->bool {
@@ -99,8 +96,11 @@ impl Curve<FieldP192,U192,MathResult> for P192 {
     fn private_key(&self)->U192 {
         FieldP192::rand_mod().num    }
 
-    fn public_key(&self,private_key:U192)->AffinePoint<FieldP192> {
-        todo!()
+    fn key_pairs(&self)->KeyPairs<U192, AffinePoint<FieldP192>>{
+        let sk=self.private_key();
+        let pk = self.ellmul(&mut self.to_affine(self.generator()), sk);
+        KeyPairs{sk,pk}
+
     }
 
     fn to_affine(&self,mut p:ProjectivePoint<FieldP192>)->AffinePoint<FieldP192> {
@@ -206,9 +206,8 @@ for i in bin.iter(){
 fn bsgs(&self,q:&mut AffinePoint<FieldP192>, d:U192)->Option<U192> {
         //This is the order of the generator point gen, it is calculated in pari-gp
 	let ord:U192 = self.gen_order();
-	//let mut z = FieldP192::znprimroot(&ord); /*generatore di Fp* dove p=ord(E,P)*/
 	//This is a primitive root mod p, it is calculated in pari-gp
-	let mut z= ImplicitP192::new(U192::from(self.zn_prim_root_gen_order()));
+	let mut z= ImplicitP192::new(U192::from(ImplicitP192::PRIME_ROOT));
 	let mut zd = ImplicitP192::power(&mut z,(ord-U192::one())/d);
 	//calculate the inverse of the d-order generator
     let mut inv_zd=zd.inverse();
@@ -224,8 +223,6 @@ fn bsgs(&self,q:&mut AffinePoint<FieldP192>, d:U192)->Option<U192> {
 			let search=bs.binary_search_by_key(&gs[j].1,|&(_a,b)|b);
             if search.is_ok()
 			{
-               println!("bs is {:?}",bs[search.unwrap()]);
-                println!("gs is {:?}",gs[j]);
             let i =gs[j].0;
             let j=bs[search.unwrap()].0;
             println!("Baby Step Giant Step found a match:i={},j={}",i,j);

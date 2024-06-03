@@ -184,7 +184,7 @@ pub fn pow_mod(&self,n: Self,p:Self) -> Self {
         let mut z:Self=*self;
         
         loop{
-        if aux%2==Self::one() {y=(z*y)%p}
+        if aux%2==Self::one() {y=(z*y)%p;}
       
         aux=aux/2;
        

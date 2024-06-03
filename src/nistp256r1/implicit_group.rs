@@ -67,34 +67,10 @@ impl ImplicitP256r1{
                                     "1426347175623630612323609842654826402846077143408"];
 
 }
-impl Add for ImplicitP256r1{
-    type Output = Self;
-    fn add(self:Self,rhs:Self) -> Self::Output{
-        let sum=self.num.mod_fast(Self::prime())+rhs.num.mod_fast(Self::prime());
-        ImplicitP256r1{num:sum.mod_fast(Self::prime())}}
-
-}  
-impl Mul for ImplicitP256r1{
-    type Output = Self;
-    fn mul(self, rhs: Self) -> Self::Output {
-        let mul=self.num.mod_fast(Self::prime())*rhs.num.mod_fast(Self::prime());
-        ImplicitP256r1{num:mul.mod_fast(Self::prime())}}
-}
-impl Neg for ImplicitP256r1{
-    type Output = Self;
-    fn neg(self) -> Self::Output {
-        ImplicitP256r1 {num:Self::prime()-self.num}
-    }
-}
-impl Sub for ImplicitP256r1{
-    type Output = Self;
-    fn sub(self, other: Self) -> Self {
-        
-            ImplicitP256r1 {num: (self.num + other.neg().num).mod_fast(Self::prime())}
-        }  
-}
 impl <'a>FieldElement<'a,U256> for ImplicitP256r1{
     const PRIME:&'a str ="115792089210356248762697446949407573529996955224135760342422259061068512044369";
+    const PRIME_ROOT:&'a str = "7";
+    
     fn zero()->Self {
         Self { num: U256::zero() }
     }
@@ -106,11 +82,7 @@ impl <'a>FieldElement<'a,U256> for ImplicitP256r1{
     }
     fn new(num:U256)->ImplicitP256r1{
           let prime = U256::from_dec_str(Self::PRIME).expect("error");
-        if num > prime{
-            panic!("Not a valid input for a field point, num should be nonnegative and less than prime, obtained {}", num);
-            } else {
-            ImplicitP256r1 {num:num}
-        }
+            ImplicitP256r1 {num:num%prime}
     }
     fn double(&mut self)->ImplicitP256r1 {
         let doub=self.num.mod_fast(Self::prime())+self.num.mod_fast(Self::prime());
@@ -157,3 +129,31 @@ fn rand_mod()-> ImplicitP256r1{
     ImplicitP256r1::new(num)
 }
     }
+
+impl Add for ImplicitP256r1{
+    type Output = Self;
+    fn add(self:Self,rhs:Self) -> Self::Output{
+        let sum=self.num.mod_fast(Self::prime())+rhs.num.mod_fast(Self::prime());
+        ImplicitP256r1::new(sum)
+
+}  
+}
+impl Mul for ImplicitP256r1{
+    type Output = Self;
+    fn mul(self, rhs: Self) -> Self::Output {
+        let mul=self.num*rhs.num;
+        ImplicitP256r1::new(mul)}
+}
+impl Neg for ImplicitP256r1{
+    type Output = Self;
+    fn neg(self) -> Self::Output {
+        ImplicitP256r1 {num:Self::prime()-self.num}
+    }
+}
+
+impl Sub for ImplicitP256r1{
+    type Output = Self;
+    fn sub(self, other: Self) -> Self {
+        
+            ImplicitP256r1::new(self.num + other.neg().num)}
+        }  

@@ -10,7 +10,7 @@ use std::ops::Neg;
 
 use crate::affine::AffinePoint;
 use crate::FieldElement;
-use crate::ellinit::CurveParms;
+use crate::ellinit::{CurveParms, KeyPairs};
 use crate::ellinit::Curve;
 use crate::projective::ProjectivePoint;
 
@@ -28,8 +28,7 @@ impl <'a>CurveParms<'a> for P256k1 {
     const B:&'a str = "7";
     const XG:&'a str= "55066263022277343669578718895168534326250603453777594175500187360389116729240";
     const YG:&'a str= "32670510020758816978083085130507043184471273380659243275938904335757337482424";
-    const P:&'a str = "115792089237316195423570985008687907852837564279074904382605163141518161494337";
-    const PRIME_ROOT:&'a str = "7";
+
 }
 impl Curve<FieldP256k1,U256,MathResult> for P256k1 {
     fn initialize()->Self {
@@ -37,7 +36,7 @@ impl Curve<FieldP256k1,U256,MathResult> for P256k1 {
         let a=FieldP256k1::new(U256::from_dec_str(Self::A).expect("Error in coefficient A"));
         let b=FieldP256k1::new(U256::from_dec_str(Self::B).expect("Error in coefficient B"));
             
-        Self{a:a,b:b,q:q}
+        Self{a,b,q}
     }
     fn identity(&self)->AffinePoint<FieldP256k1>{
         AffinePoint{ 
@@ -59,15 +58,14 @@ impl Curve<FieldP256k1,U256,MathResult> for P256k1 {
         ProjectivePoint { x: p.x, y: p.y.neg(), z:p.z,infinity: p.infinity }
     }
      fn zn_prim_root_gen_order(&self)-> U256{
-            U256::from_dec_str(Self::PRIME_ROOT).expect("error in primitive root of generator's order!")
+            U256::from_dec_str(ImplicitP256k1::PRIME_ROOT).expect("error in primitive root of generator's order!")
     }
      fn gen_order(&self)-> U256{
-        U256::from_dec_str(Self::P).expect("error in generator's order P!")
+        U256::from_dec_str(ImplicitP256k1::PRIME).expect("error in generator's order P!")
     }
 
     fn ellisoncurve(&self,mut p:AffinePoint<FieldP256k1>)->bool {
-/*         let q:U256=U256::from_dec_str(Self::Q).expect("error in Q random");
- */     let a=FieldP256k1::new(U256::from_dec_str(Self::A).expect("error in A"));
+        let a=FieldP256k1::new(U256::from_dec_str(Self::A).expect("error in A"));
         let b=FieldP256k1::new(U256::from_dec_str(Self::B).expect("error in B"));
         
         let x3=p.x.power(U256::from(3));
@@ -99,10 +97,11 @@ impl Curve<FieldP256k1,U256,MathResult> for P256k1 {
     fn private_key(&self)->U256 {
         FieldP256k1::rand_mod().num    }
 
-    fn public_key(&self,private_key:U256)->AffinePoint<FieldP256k1> {
-        todo!()
+    fn key_pairs(&self)->KeyPairs<U256,AffinePoint<FieldP256k1>> {
+            let sk=self.private_key();
+            let pk = self.ellmul(&mut self.to_affine(self.generator()), sk);
+            KeyPairs{sk,pk}
     }
-
     fn to_affine(&self,mut p:ProjectivePoint<FieldP256k1>)->AffinePoint<FieldP256k1> {
         let x_aff=p.x*FieldP256k1::inverse( &mut p.z);
         let y_aff=p.y*FieldP256k1::inverse(&mut p.z);
@@ -224,8 +223,6 @@ fn bsgs(&self,q:&mut AffinePoint<FieldP256k1>, d:U256)->MathResult {
 			let search=bs.binary_search_by_key(&gs[j].1,|&(_a,b)|b);
             if search.is_ok()
 			{
-               println!("bs is {:?}",bs[search.unwrap()]);
-                println!("gs is {:?}",gs[j]);
             let i =gs[j].0;
             let j=bs[search.unwrap()].0;
             println!("Baby Step Giant Step found a match:i={},j={}",i,j);
@@ -249,7 +246,6 @@ impl P256k1 {
         for item in div {
             let alfa=self.bsgs(q, item);
             if alfa.is_some() {return alfa}
-
         }
         None
         

@@ -33,7 +33,8 @@ impl Sub for FieldP224{
     }
 }
 impl <'a>FieldElement<'a,U224> for FieldP224{
-    const PRIME:&'a str ="26959946667150639794667015087019630673557916260026308143510066298881" ;
+    const PRIME:&'a str ="26959946667150639794667015087019630673557916260026308143510066298881";
+    const PRIME_ROOT:&'a str = "22";
     fn zero()->Self {
         Self { num: U224::zero() }
     }

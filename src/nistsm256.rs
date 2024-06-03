@@ -10,7 +10,7 @@ use std::ops::Neg;
 
 use crate::affine::AffinePoint;
 use crate::FieldElement;
-use crate::ellinit::CurveParms;
+use crate::ellinit::{CurveParms, KeyPairs};
 use crate::ellinit::Curve;
 use crate::projective::ProjectivePoint;
 
@@ -28,8 +28,7 @@ impl <'a>CurveParms<'a> for SM256 {
     const B:&'a str = "18505919022281880113072981827955639221458448578012075254857346196103069175443";
     const XG:&'a str= "22963146547237050559479531362550074578802567295341616970375194840604139615431";
     const YG:&'a str= "85132369209828568825618990617112496413088388631904505083283536607588877201568";
-    const P:&'a str = "115792089210356248756420345214020892766061623724957744567843809356293439045923";
-    const PRIME_ROOT:&'a str = "3";
+
 }
 impl Curve<FieldSM256,U256,MathResult> for SM256 {
     fn initialize()->Self {
@@ -59,10 +58,10 @@ impl Curve<FieldSM256,U256,MathResult> for SM256 {
         ProjectivePoint { x: p.x, y: p.y.neg(), z:p.z,infinity: p.infinity }
     }
      fn zn_prim_root_gen_order(&self)-> U256{
-            U256::from_dec_str(Self::PRIME_ROOT).expect("error in primitive root of generator's order!")
+            U256::from_dec_str(ImplicitSM256::PRIME_ROOT).expect("error in primitive root of generator's order!")
     }
      fn gen_order(&self)-> U256{
-        U256::from_dec_str(Self::P).expect("error in generator's order P!")
+        U256::from_dec_str(ImplicitSM256::PRIME).expect("error in generator's order P!")
     }
 
     fn ellisoncurve(&self,mut p:AffinePoint<FieldSM256>)->bool {
@@ -99,8 +98,10 @@ impl Curve<FieldSM256,U256,MathResult> for SM256 {
     fn private_key(&self)->U256 {
         FieldSM256::rand_mod().num    }
 
-    fn public_key(&self,private_key:U256)->AffinePoint<FieldSM256> {
-        todo!()
+    fn key_pairs(&self)->KeyPairs<U256,AffinePoint<FieldSM256>> {
+        let sk=self.private_key();
+        let pk = self.ellmul(&mut self.to_affine(self.generator()), sk);
+        KeyPairs{sk,pk}
     }
 
     fn to_affine(&self,mut p:ProjectivePoint<FieldSM256>)->AffinePoint<FieldSM256> {
@@ -224,8 +225,6 @@ fn bsgs(&self, q:&mut AffinePoint<FieldSM256>, d:U256)->MathResult {
 			let search=bs.binary_search_by_key(&gs[j].1,|&(_a,b)|b);
             if search.is_ok()
 			{
-               println!("bs is {:?}",bs[search.unwrap()]);
-                println!("gs is {:?}",gs[j]);
             let i =gs[j].0;
             let j=bs[search.unwrap()].0;
             println!("Baby Step Giant Step found a match:i={},j={}",i,j);

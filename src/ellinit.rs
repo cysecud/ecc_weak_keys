@@ -6,6 +6,10 @@ pub struct Ellinit{
     pub b:FieldPoint,
     pub q:U256
 } */
+pub struct KeyPairs<T,AffinePoint>{
+    pub sk:T,
+    pub pk:AffinePoint
+}
 pub trait CurveParms<'a>{    
     //required//
     
@@ -14,8 +18,6 @@ pub trait CurveParms<'a>{
     const B:&'a str;
     const XG:&'a str;
     const YG:&'a str;
-    const P:&'a str;
-    const PRIME_ROOT:&'a str;
 }
 pub trait Curve <FieldPoint,Scalar,MathResult>{
     fn initialize()->Self;
@@ -28,7 +30,7 @@ pub trait Curve <FieldPoint,Scalar,MathResult>{
     fn ellisoncurve(&self,p:AffinePoint<FieldPoint>)->bool;
     fn random (&self)->AffinePoint<FieldPoint>;
     fn private_key(&self)->Scalar;
-    fn public_key(&self,private_key:Scalar)->AffinePoint<FieldPoint>;
+    fn key_pairs(&self)->KeyPairs<Scalar,AffinePoint<FieldPoint>>;
     fn to_affine(&self,p:ProjectivePoint<FieldPoint>)->AffinePoint<FieldPoint>;
     fn jc_to_affine(&self,p:ProjectivePoint<FieldPoint>)->AffinePoint<FieldPoint>;
     fn proj_identity(&self)->ProjectivePoint<FieldPoint>;

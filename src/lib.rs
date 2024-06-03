@@ -1,3 +1,6 @@
+use std::fmt::Debug;
+
+use num_traits::{One, Zero};
 
 #[macro_use]
 pub mod ellinit;
@@ -14,10 +17,10 @@ pub mod nistp521;
 pub trait Scalar<'a> {
     const SIZE:usize;
     const ORDER:&'a str;
-
 }
-pub trait FieldElement<'a,T>{
+pub trait FieldElement<'a,T:Scalar<'a>>{
     const PRIME:&'a str;
+    const PRIME_ROOT:&'a str;
     const ZERO:&'a str ="0";
     const ONE:&'a str="1";
     fn zero()->Self;

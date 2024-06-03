@@ -10,7 +10,7 @@ use std::ops::Neg;
 
 use crate::affine::AffinePoint;
 use crate::FieldElement;
-use crate::ellinit::CurveParms;
+use crate::ellinit::{CurveParms, KeyPairs};
 use crate::ellinit::Curve;
 use crate::projective::ProjectivePoint;
 
@@ -22,14 +22,11 @@ pub struct P384{
     pub a:FieldP384,
     pub b:FieldP384,
 }
-
 impl <'a>CurveParms<'a> for P384 {
     const A:&'a str = "39402006196394479212279040100143613805079739270465446667948293404245721771496870329047266088258938001861606973112316";
     const B:&'a str = "27580193559959705877849011840389048093056905856361568521428707301988689241309860865136260764883745107765439761230575";
     const XG:&'a str= "26247035095799689268623156744566981891852923491109213387815615900925518854738050089022388053975719786650872476732087";
     const YG:&'a str= "8325710961489029985546751289520108179287853048861315594709205902480503199884419224438643760392947333078086511627871";
-    const P:&'a str = "39402006196394479212279040100143613805079739270465446667946905279627659399113263569398956308152294913554433653942643";
-    const PRIME_ROOT:&'a str = "3";
 }
 impl Curve<FieldP384,U384,MathResult> for P384 {
     fn initialize()->Self {
@@ -59,15 +56,14 @@ impl Curve<FieldP384,U384,MathResult> for P384 {
         ProjectivePoint { x: p.x, y: p.y.neg(), z:p.z,infinity: p.infinity }
     }
      fn zn_prim_root_gen_order(&self)-> U384{
-            U384::from_dec_str(Self::PRIME_ROOT).expect("error in primitive root of generator's order!")
+            U384::from_dec_str(ImplicitP384::PRIME_ROOT).expect("error in primitive root of generator's order!")
     }
      fn gen_order(&self)-> U384{
-        U384::from_dec_str(Self::P).expect("error in generator's order P!")
+        U384::from_dec_str(ImplicitP384::PRIME).expect("error in generator's order P!")
     }
 
     fn ellisoncurve(&self,mut p:AffinePoint<FieldP384>)->bool {
-/*         let q:U384=U384::from_dec_str(Self::Q).expect("error in Q random");
- */     let a=FieldP384::new(U384::from_dec_str(Self::A).expect("error in A"));
+        let a=FieldP384::new(U384::from_dec_str(Self::A).expect("error in A"));
         let b=FieldP384::new(U384::from_dec_str(Self::B).expect("error in B"));
         
         let x3=p.x.power(U384::from(3));
@@ -99,8 +95,10 @@ impl Curve<FieldP384,U384,MathResult> for P384 {
     fn private_key(&self)->U384 {
         FieldP384::rand_mod().num    }
 
-    fn public_key(&self,private_key:U384)->AffinePoint<FieldP384> {
-        todo!()
+    fn key_pairs(&self)->KeyPairs<U384,AffinePoint<FieldP384>> {
+            let sk=self.private_key();
+            let pk = self.ellmul(&mut self.to_affine(self.generator()), sk);
+            KeyPairs{sk,pk}
     }
 
     fn to_affine(&self,mut p:ProjectivePoint<FieldP384>)->AffinePoint<FieldP384> {
@@ -224,8 +222,6 @@ fn bsgs(&self,q:&mut AffinePoint<FieldP384>, d:U384)->MathResult {
 			let search=bs.binary_search_by_key(&gs[j].1,|&(_a,b)|b);
             if search.is_ok()
 			{
-               println!("bs is {:?}",bs[search.unwrap()]);
-                println!("gs is {:?}",gs[j]);
             let i =gs[j].0;
             let j=bs[search.unwrap()].0;
             println!("Baby Step Giant Step found a match:i={},j={}",i,j);

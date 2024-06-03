@@ -10,7 +10,7 @@ use std::ops::Neg;
 
 use crate::affine::AffinePoint;
 use crate::FieldElement;
-use crate::ellinit::CurveParms;
+use crate::ellinit::{CurveParms, KeyPairs};
 use crate::ellinit::Curve;
 use crate::projective::ProjectivePoint;
 
@@ -28,8 +28,7 @@ impl <'a>CurveParms<'a> for P256r1 {
     const B:&'a str = "41058363725152142129326129780047268409114441015993725554835256314039467401291";
     const XG:&'a str= "48439561293906451759052585252797914202762949526041747995844080717082404635286";
     const YG:&'a str= "36134250956749795798585127919587881956611106672985015071877198253568414405109";
-    const P:&'a str = "115792089210356248762697446949407573529996955224135760342422259061068512044369";
-    const PRIME_ROOT:&'a str = "7";
+    
 }
 impl Curve<FieldP256r1,U256,MathResult> for P256r1 {
     fn initialize()->Self {
@@ -59,15 +58,14 @@ impl Curve<FieldP256r1,U256,MathResult> for P256r1 {
         ProjectivePoint { x: p.x, y: p.y.neg(), z:p.z,infinity: p.infinity }
     }
      fn zn_prim_root_gen_order(&self)-> U256{
-            U256::from_dec_str(Self::PRIME_ROOT).expect("error in primitive root of generator's order!")
+            U256::from_dec_str(ImplicitP256r1::PRIME_ROOT).expect("error in primitive root of generator's order!")
     }
      fn gen_order(&self)-> U256{
-        U256::from_dec_str(Self::P).expect("error in generator's order P!")
+        U256::from_dec_str(ImplicitP256r1::PRIME).expect("error in generator's order P!")
     }
 
     fn ellisoncurve(&self,mut p:AffinePoint<FieldP256r1>)->bool {
-/*         let q:U256=U256::from_dec_str(Self::Q).expect("error in Q random");
- */     let a=FieldP256r1::new(U256::from_dec_str(Self::A).expect("error in A"));
+        let a=FieldP256r1::new(U256::from_dec_str(Self::A).expect("error in A"));
         let b=FieldP256r1::new(U256::from_dec_str(Self::B).expect("error in B"));
         
         let x3=p.x.power(U256::from(3));
@@ -99,8 +97,10 @@ impl Curve<FieldP256r1,U256,MathResult> for P256r1 {
     fn private_key(&self)->U256 {
         FieldP256r1::rand_mod().num    }
 
-    fn public_key(&self,private_key:U256)->AffinePoint<FieldP256r1> {
-        todo!()
+    fn key_pairs(&self)->KeyPairs<U256,AffinePoint<FieldP256r1>> {
+            let sk=self.private_key();
+            let pk = self.ellmul(&mut self.to_affine(self.generator()), sk);
+            KeyPairs{sk,pk}
     }
 
     fn to_affine(&self,mut p:ProjectivePoint<FieldP256r1>)->AffinePoint<FieldP256r1> {
@@ -210,22 +210,23 @@ fn bsgs(&self,q:&mut AffinePoint<FieldP256r1>, d:U256)->MathResult {
 	//This is a primitive root mod p, it is calculated in pari-gp
 	let mut z= ImplicitP256r1::new(U256::from(self.zn_prim_root_gen_order()));
 	let mut zd = ImplicitP256r1::power(&mut z,(ord-U256::one())/d);
+    println!("zd is {}",zd.num);
 	//calculate the inverse of the d-order generator
     let mut inv_zd=zd.inverse();
 	let mut res:MathResult=None;
     let mut bs: Vec<(u128,AffinePoint<FieldP256r1>)>=Vec::new();
     let mut gs: Vec<(u128,AffinePoint<FieldP256r1>)>=Vec::new();
 	let  m =U256::integer_sqrt(&d)+U256::one();//ceil(d)
+    println!("m is {}",m);
 	'outer: for i in 0..m.as_u128() {
         bs.push((i,self.ellmul(&mut self.jc_to_affine(self.generator()), ImplicitP256r1::power(&mut zd,U256::from(i)).num)));
         bs.sort_by_key(|key: &(u128, AffinePoint<FieldP256r1>)| key.1 );
-		gs.push((i,self.ellmul(q,ImplicitP256r1::power(&mut inv_zd,m*U256::from(i)).num)));
+		println!("bs is {:?}",bs);
+        gs.push((i,self.ellmul(q,ImplicitP256r1::power(&mut inv_zd,m*U256::from(i)).num)));
         for j in 0..bs.len(){
 			let search=bs.binary_search_by_key(&gs[j].1,|&(_a,b)|b);
             if search.is_ok()
 			{
-               println!("bs is {:?}",bs[search.unwrap()]);
-                println!("gs is {:?}",gs[j]);
             let i =gs[j].0;
             let j=bs[search.unwrap()].0;
             println!("Baby Step Giant Step found a match:i={},j={}",i,j);
@@ -252,6 +253,7 @@ impl P256r1 {
         println!("div is {:?}",div);
         for item in div {
             let alfa=self.bsgs(q, item);
+            println!("ended with divisor {}",item);
             if alfa.is_some() {return alfa}
         }
         None
