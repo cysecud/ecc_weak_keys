@@ -44,10 +44,11 @@ let mut pub_key = AffinePoint { x: FieldP192::new(U192::from_dec_str("8161531679
 let k=U192::from_dec_str("3902464043483517614357752686118068675663797609365657037670").expect("error");
 //let mut pub_key=p192.ellmul(&mut p192.to_affine(p192.generator()), k);
 println!("Point to be tested is {:?}",pub_key);
-let alpha=p192.bsgs(&mut pub_key, U192::from(16u32));
+//let alpha=p192.bsgs(&mut pub_key, U192::from(16u32));
 
-//let alpha=p192.test_key( &mut pub_key, 32);
+let alpha=p192.test_key( &mut pub_key, 32);
 println!("alpha");
+ 
  *//* 
     /*Test Field224 */ 
 let mut a=FieldP224::rand_mod();
