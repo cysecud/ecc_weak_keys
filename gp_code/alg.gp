@@ -35,11 +35,11 @@ for(i=1,m,
 				)
 			
 	);
-if (match == 0,print("No match found! Private key is safe within this bound!"));
+	if (match == 0,print("No match found! Private key is safe within this bound!"));
 
 };
 test_key(public_key,bound)={
-	
+	if (bound!=32&&bound!=64&&bound!=128&&bound!=160,print("Wrong bound size. Available size are 32,64,128,160."));
 	if(bound==32, 
 		foreach(div32,d,bsgs(public_key,d)),
 		if(bound==64, 
@@ -49,7 +49,7 @@ test_key(public_key,bound)={
 					if(bound==160, 
 					foreach(div160,d,bsgs(public_key,d)))
 				)
-		), print("Wrong bound size. Available size are 32,64,128,160."))
+		))
 };
 key_pairs_gen()={
 	d=div32[1];
