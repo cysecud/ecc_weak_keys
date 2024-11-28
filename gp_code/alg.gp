@@ -12,6 +12,7 @@ z=Mod(7, p);
 div32 = [18051648]; */
 bsgs(public_key,d)=
 {
+	match=0; /*boolean value false if no match is found*/
 	print("Point to be tested:\n " public_key);
 	print("Divisor: " d);
 m=ceil(sqrt(d))+1;
@@ -28,11 +29,13 @@ for(i=1,m,
 				j=select((x) -> x == baby_step, bs, 1);
 				private_key=lift(Mod(zd,p)^((m*i-j[1])%d));
 				print("private key detected:\n" private_key);
+				match=1;
 				break;
 				)
 				)
 			
 	);
+if (match == 0,print("No match found! Private key is safe within this bound!"));
 
 };
 test_key(public_key,bound)={
