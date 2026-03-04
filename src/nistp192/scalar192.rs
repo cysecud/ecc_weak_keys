@@ -6,7 +6,6 @@ use crate::Scalar;
 
 construct_uint!{
 pub struct U192(6);}
-type Scalar192=U192;
 pub type MathResult = Option<U192>;
 type RootsResult = [Option<U192>;2];
 impl <'a>Scalar<'a> for U192{
@@ -14,22 +13,19 @@ impl <'a>Scalar<'a> for U192{
         const ORDER:&'a str="192";
     }
 #[derive(Debug)]
-
 pub enum MathError {
     QuadraticNonResidueModP
 }
-
-
 
 impl U192 {
     
     /*Algorithm 1 Crandall [https://eprint.iacr.org/2022/411.pdf] 
     Pseudo Mersenne Numbers are integers of the form q = 2^l − c,
     where c is ”small”. An algorithm to computhe their modular reduction is introduced by Crandall*/
-
+/// 
     pub fn mod_fast(mut self, rhs: Self) -> Self{
         let l=Self::from_dec_str(Self::ORDER).expect("error fast modular");
-        let p=Self::from(2).pow(l);
+        let p=Self::from(2)<<l;
         let c=p-rhs;
         while self>=Self::from(2)*rhs {
             let a0=self&(p-1);

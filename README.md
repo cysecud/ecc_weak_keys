@@ -21,10 +21,7 @@ navigate into the main.rs and start your test.
 
 TO DO!
 
-
-## Authors
-
-## Authors
+Authors
 
 Developed and maintained by:
 

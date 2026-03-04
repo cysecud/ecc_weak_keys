@@ -15,26 +15,34 @@ use elliptic_curves::nistp521::{field_p521::FieldP521,scalar521::U521,P521};
 use clap::{Arg,Command};
 
 fn main () { 
+//  let a = FieldP192::rand_mod();
+//  let square = a*a;
+// let is_square = U192::check_sqrt_mod_prime(square.num,FieldP192::prime());
+// println!("{}",is_square.unwrap());
 let p256=P256r1::initialize();
 println!("Inizialiation ok");
-let mut z=ImplicitP256r1::new(p256.zn_prim_root_gen_order());
-println!("z is {}",z.num);
-let d=U256::from(48);
-let j=(p256.gen_order()-1)/d;
-println!("j is {}",j);
+let mut k = p256.key_pairs();
+p256.test_key(&mut k.pk, 32);
 
-let mut zd=z.power(j);
-println!("zd is {}",zd.num);
-let k=U256::from(23);
-let alpha=zd.power(k);
-println!("alpha is {}",alpha.num);
 
-let mut pub_key=p256.ellmul(&mut p256.to_affine(p256.generator()), alpha.num);
-println!("Public key ={:?}",pub_key);
-let c = p256.bsgs(&mut pub_key, U256::from(59466192));
-println!("c is {:?}",c);
+// let mut z=ImplicitP256r1::new(p256.zn_prim_root_gen_order());
+// println!("z is {}",z.num);
+// let d=U256::from(48);
+// let j=(p256.gen_order()-1)/d;
+// println!("j is {}",j);
 
-p256.test_key(&mut pub_key, 32);
+// let mut zd=z.power(j);
+// println!("zd is {}",zd.num);
+// let k=U256::from(23);
+// let alpha=zd.power(k);
+// println!("alpha is {}",alpha.num);
+
+// let mut pub_key=p256.ellmul(&mut p256.to_affine(p256.generator()), alpha.num);
+// println!("Public key ={:?}",pub_key);
+// let c = p256.bsgs(&mut pub_key, U256::from(59466192));
+// println!("c is {:?}",c);
+
+// p256.test_key(&mut pub_key, 32);
 /* 
 let p192=P192::initialize();
 println!("gen p192 {:?}",p192.generator());

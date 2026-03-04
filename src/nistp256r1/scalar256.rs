@@ -2,7 +2,7 @@ use crate::Scalar;
 use rand::Rng;
 use uint::construct_uint;
 construct_uint!{
-    pub struct U256(8);}
+pub struct U256(8);}
 type T=U256;
 
 pub type MathResult = Option<T>;
@@ -82,10 +82,13 @@ impl U256 {
 
         /*Test b = 0 */
     
-if b==Self::zero() {if a!=Self::one() {return 0i8;} else if  a==Self::one() {return 1i8;} }
+        if b==Self::zero() {
+            if a!=Self::one() {return 0i8;} 
+            else if  a==Self::one() {return 1i8;} 
+        }
 
 /*Remove 2 from b: v will be the even part of b */
-if a%2==Self::zero() && b%2==Self::zero() {return 0i8;} 
+        if a%2==Self::zero() && b%2==Self::zero() {return 0i8;} 
         else {
             /*initialize v = 0 */
             let mut v:Self=Self::zero();

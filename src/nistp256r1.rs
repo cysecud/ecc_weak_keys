@@ -231,7 +231,7 @@ fn bsgs(&self,q:&mut AffinePoint<FieldP256r1>, d:U256)->MathResult {
             let j=bs[search.unwrap()].0;
             println!("Baby Step Giant Step found a match:i={},j={}",i,j);
 			let alpha=ImplicitP256r1::power(&mut zd,m*U256::from(i)+U256::from(j)%d);
-			println!("The key is weak. Your secret key is {}",alpha.num);
+			println!("The key is weak. Your secret key has been detected {}",alpha.num);
             res=Some(alpha.num);
 			break 'outer;
         }}}
@@ -247,7 +247,7 @@ impl P256r1 {
             128usize => ImplicitP256r1::DIVISOR_128.iter().map(|x| U256::from_dec_str(x).expect("error in divisor 128")).collect(),
             160usize => ImplicitP256r1::DIVISOR_160.iter().map(|x| U256::from_dec_str(x).expect("error in divisor 160")).collect(),
 
-            _=>panic!("bound must be a usize 32, 64,128 or 160!")
+            _=>panic!("bound must be a usize 32, 64,128 or 160.")
             
         };
         println!("div is {:?}",div);

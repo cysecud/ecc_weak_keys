@@ -30,6 +30,7 @@ pub trait Curve <FieldPoint,Scalar,MathResult>{
     fn ellisoncurve(&self,p:AffinePoint<FieldPoint>)->bool;
     fn random (&self)->AffinePoint<FieldPoint>;
     fn private_key(&self)->Scalar;
+    /// Generate key_pairs (sk,pk)
     fn key_pairs(&self)->KeyPairs<Scalar,AffinePoint<FieldPoint>>;
     fn to_affine(&self,p:ProjectivePoint<FieldPoint>)->AffinePoint<FieldPoint>;
     fn jc_to_affine(&self,p:ProjectivePoint<FieldPoint>)->AffinePoint<FieldPoint>;
