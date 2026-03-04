@@ -14,7 +14,7 @@ Clone the repository:
 
 ```bash
 gh repo clone cysecud/ecc_weak_keys
-
+```
 navigate into the main.rs and start your test.
 
 ## Example on Curve P256
